@@ -1,410 +1,649 @@
 <!DOCTYPE html>
-
-<html>
+<html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
-<title>Broadcast WhatsApp</title>
-
-<style>
-
-body{
-  font-family:Arial,sans-serif;
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
-
-h2{
-  text-align:center;
-}
-
-input,
-select,
-textarea,
-button{
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  margin-bottom:15px;
-  box-sizing:border-box;
-}
-
-textarea{
-  min-height:150px;
-}
-
-#kontakList{
-  border:1px solid #ddd;
-  padding:10px;
-  max-height:300px;
-  overflow:auto;
-}
-
-.item{
-  margin-bottom:5px;
-}
-
-button{
-  cursor:pointer;
-}
-
-.info{
-  font-weight:bold;
-  margin-bottom:10px;
-}
-
-</style>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Broadcast WhatsApp Pro</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons (untuk ikon modern) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            whatsapp: {
+              50: '#efeae2',
+              100: '#d1f4cc',
+              500: '#128c7e',
+              600: '#075e54',
+              700: '#054c44',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
+<body class="bg-gray-50 text-gray-800 min-h-screen font-sans">
 
-<body>
-
-<h2>Broadcast WhatsApp</h2>
-
-<label>Nama Pengirim</label> <input type="text" id="pengirim">
-
-<label>Filter Grup</label> <select id="grup"></select>
-
-<label>
-<input type="checkbox" id="pilihSemua">
- Pilih Semua
-</label>
-
-<div class="info">
-Jumlah Terpilih :
-<span id="jumlah">0</span>
-</div>
-
-<div id="kontakList"></div>
-
-<label>Template Pesan</label> <select id="template">
-
-<option value="">-- Pilih Template --</option>
-</select>
-
-<label>Isi Pesan</label>
-
-<textarea id="pesan"></textarea>
-
-<button onclick="kirimPesan()">
-Kirim Pesan
-</button>
-
-<script>
-
-const API_URL =
-'https://script.google.com/macros/s/AKfycbzHrmEKaeUJjW4a3AvW-HtpYFJykKuRfPvf7BIFfuY34DUh6AveDMGczFIatY8m74qE/exec';
-
-let kontakData = [];
-let templateData = [];
-
-async function getJSON(url){
-
-  const res =
-    await fetch(url);
-
-  return await res.json();
-
-}
-
-async function loadGroups(){
-
-  const data =
-    await getJSON(
-      API_URL +
-      '?action=getGroups'
-    );
-
-  const grup =
-    document.getElementById(
-      'grup'
-    );
-
-  grup.innerHTML =
-    '<option value="">Semua Grup</option>';
-
-  data.forEach(row=>{
-
-    grup.innerHTML +=
-      `<option value="${row[1]}">
-        ${row[1]}
-      </option>`;
-
-  });
-
-}
-
-async function loadContacts(){
-
-  const grup =
-    document.getElementById(
-      'grup'
-    ).value;
-
-  let url =
-    API_URL +
-    '?action=getContacts';
-
-  if(grup){
-
-    url +=
-      '&group=' +
-      encodeURIComponent(grup);
-
-  }
-
-  kontakData =
-    await getJSON(url);
-
-  renderContacts();
-
-}
-
-function renderContacts(){
-
-  const div =
-    document.getElementById(
-      'kontakList'
-    );
-
-  div.innerHTML='';
-
-  kontakData.forEach(item=>{
-
-    div.innerHTML += `
-      <div class="item">
-      <label>
-      <input
-        type="checkbox"
-        class="kontak"
-        value="${item.id}">
-      ${item.nama}
-      (${item.nomor})
-      </label>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="bg-whatsapp-500 text-white p-2.5 rounded-2xl shadow-md shadow-whatsapp-500/20">
+          <i data-lucide="send" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-gray-900">Broadcast WhatsApp</h1>
+          <p class="text-sm text-gray-500">Kirim pesan massal dengan mudah dan terstruktur</p>
+        </div>
       </div>
-    `;
+      <div class="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-whatsapp-100 text-whatsapp-700 text-xs font-semibold rounded-full">
+        <span class="w-2 h-2 rounded-full bg-whatsapp-500 animate-pulse"></span>
+        Sistem Siap
+      </div>
+    </header>
 
-  });
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+      
+      <!-- Panel Kiri: Pengaturan & Kontak (Col-7) -->
+      <div class="md:col-span-7 space-y-6">
+        
+        <!-- Section: Konfigurasi Pengirim & Filter -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i data-lucide="sliders" class="w-5 h-5 text-whatsapp-500"></i>
+            Pengaturan Pengirim
+          </h2>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="pengirim" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Nama Pengirim</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                </div>
+                <input type="text" id="pengirim" placeholder="Nama Anda/Instansi" 
+                  class="pl-9 w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-500 focus:bg-white transition-all">
+              </div>
+            </div>
+            
+            <div>
+              <label for="grup" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Filter Grup</label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
+                <select id="grup" onchange="loadContacts()" 
+                  class="pl-9 w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-500 focus:bg-white transition-all appearance-none cursor-pointer">
+                  <option value="">Semua Grup</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  bindCheckbox();
+        <!-- Section: Daftar Kontak -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col h-[400px]">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <i data-lucide="contact-2" class="w-5 h-5 text-whatsapp-500"></i>
+              Daftar Kontak
+            </h2>
+            
+            <div class="flex items-center gap-2">
+              <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">
+                Terpilih: <span id="jumlah" class="font-bold text-whatsapp-600">0</span>
+              </span>
+            </div>
+          </div>
 
-}
+          <!-- Fitur Cari Kontak & Pilih Semua -->
+          <div class="flex flex-col sm:flex-row gap-3 mb-3">
+            <div class="relative flex-1">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <i data-lucide="search" class="w-4 h-4"></i>
+              </div>
+              <input type="text" id="cariKontak" oninput="filterKontakAktif()" placeholder="Cari nama atau nomor..." 
+                class="pl-9 w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-whatsapp-500 focus:bg-white transition-all">
+            </div>
+            
+            <label class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl cursor-pointer transition-colors text-xs select-none">
+              <input type="checkbox" id="pilihSemua" class="rounded border-gray-300 text-whatsapp-600 focus:ring-whatsapp-500 h-4 w-4">
+              <span class="font-medium text-gray-700">Pilih Semua</span>
+            </label>
+          </div>
 
-function bindCheckbox(){
+          <!-- List Container -->
+          <div id="kontakList" class="flex-1 overflow-y-auto border border-gray-100 rounded-xl bg-gray-50 divide-y divide-gray-100 p-2 space-y-1">
+            <div class="text-center py-8 text-gray-400">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp-500 mx-auto mb-2"></div>
+              Memuat kontak...
+            </div>
+          </div>
+        </div>
 
-  document
-    .querySelectorAll('.kontak')
-    .forEach(cb=>{
+      </div>
 
-      cb.addEventListener(
-        'change',
-        updateJumlah
-      );
+      <!-- Panel Kanan: Pesan & Templates (Col-5) -->
+      <div class="md:col-span-5 space-y-6">
+        
+        <!-- Section: Template & Isi Pesan -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+          <h2 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i data-lucide="message-square" class="w-5 h-5 text-whatsapp-500"></i>
+            Tulis Pesan
+          </h2>
 
+          <div>
+            <label for="template" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Gunakan Template</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <i data-lucide="layout-template" class="w-4 h-4"></i>
+              </div>
+              <select id="template" 
+                class="pl-9 w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-500 focus:bg-white transition-all appearance-none cursor-pointer">
+                <option value="">-- Pilih Template --</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label for="pesan" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Isi Pesan</label>
+              <span class="text-[10px] text-gray-400 font-mono">Gunakan <b class="text-whatsapp-600">{nama}</b> untuk personalisasi</span>
+            </div>
+            <textarea id="pesan" placeholder="Tulis isi pesan broadcast Anda di sini..." 
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-whatsapp-500 focus:bg-white transition-all min-h-[160px] font-sans resize-y"></textarea>
+          </div>
+
+          <button onclick="bukaKonfirmasi()" id="btnKirim" 
+            class="w-full bg-whatsapp-500 hover:bg-whatsapp-600 active:bg-whatsapp-700 text-white font-medium py-3 rounded-xl shadow-lg shadow-whatsapp-500/20 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="send-to-back" class="w-5 h-5"></i>
+            Kirim Pesan Massal
+          </button>
+        </div>
+
+        <!-- Info Tambahan / Tips -->
+        <div class="bg-whatsapp-50 border border-whatsapp-100 p-4 rounded-2xl flex gap-3">
+          <i data-lucide="info" class="w-5 h-5 text-whatsapp-600 shrink-0 mt-0.5"></i>
+          <div class="text-xs text-whatsapp-700 space-y-1">
+            <p class="font-bold">Tips Personalisasi:</p>
+            <p>Masukkan kata kunci <code class="bg-white px-1 py-0.5 rounded border border-whatsapp-100 font-mono font-bold text-whatsapp-600">{nama}</code> di dalam kotak pesan untuk menyapa pelanggan secara otomatis sesuai data kontak mereka.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi / Progress Pengiriman -->
+  <div id="modalKonfirmasi" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 transform scale-95 transition-transform duration-300" id="modalBox">
+      <div class="flex items-center gap-3 border-b border-gray-100 pb-3 mb-4">
+        <div class="bg-amber-50 text-amber-600 p-2 rounded-xl" id="modalIconContainer">
+          <i data-lucide="alert-triangle" class="w-6 h-6" id="modalIcon"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-gray-900" id="modalTitle">Konfirmasi Pengiriman</h3>
+          <p class="text-xs text-gray-500" id="modalSubtitle">Mohon periksa kembali sebelum mengirim</p>
+        </div>
+      </div>
+      
+      <!-- Konten Modal Dinamis -->
+      <div id="modalBody" class="text-sm text-gray-600 space-y-3 mb-6">
+        <!-- Diisi lewat JS -->
+      </div>
+
+      <!-- Tombol Kontrol Modal -->
+      <div class="flex items-center justify-end gap-3" id="modalFooter">
+        <button onclick="tutupModal()" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors">
+          Batal
+        </button>
+        <button onclick="prosesKirimPesan()" class="px-5 py-2 text-sm font-medium text-white bg-whatsapp-500 hover:bg-whatsapp-600 rounded-xl transition-colors flex items-center gap-2">
+          Ya, Kirim Sekarang
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sistem Alert / Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-white border border-gray-100 px-4 py-3 rounded-xl shadow-xl transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300">
+    <span id="toastIcon" class="p-1.5 rounded-lg text-white"></span>
+    <span id="toastText" class="text-sm font-medium text-gray-700"></span>
+  </div>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzHrmEKaeUJjW4a3AvW-HtpYFJykKuRfPvf7BIFfuY34DUh6AveDMGczFIatY8m74qE/exec';
+
+    let kontakData = [];
+    let templateData = [];
+    let kontakTerfilter = []; // Menyimpan data hasil pencarian
+
+    // Inisialisasi ikon Lucide
+    function initIcons() {
+      lucide.createIcons();
+    }
+
+    // Fungsi fetch global dengan indikasi loading
+    async function getJSON(url) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Jaringan bermasalah.');
+        return await res.json();
+      } catch (error) {
+        showToast('Gagal memuat data dari server', 'error');
+        console.error(error);
+        return [];
+      }
+    }
+
+    // Memuat Daftar Grup
+    async function loadGroups() {
+      const data = await getJSON(API_URL + '?action=getGroups');
+      const grupSelect = document.getElementById('grup');
+      
+      // Reset & simpan opsi pertama
+      grupSelect.innerHTML = '<option value="">Semua Grup</option>';
+      
+      if (data && data.length > 0) {
+        data.forEach(row => {
+          if(row[1]) { // Pastikan kolom grup terisi
+            grupSelect.innerHTML += `<option value="${row[1]}">${row[1]}</option>`;
+          }
+        });
+      }
+      initIcons();
+    }
+
+    // Memuat Daftar Kontak berdasarkan grup yang dipilih
+    async function loadContacts() {
+      const listDiv = document.getElementById('kontakList');
+      listDiv.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp-500 mb-3"></div>
+          <p class="text-xs">Mengambil daftar kontak terbaru...</p>
+        </div>
+      `;
+
+      const grup = document.getElementById('grup').value;
+      let url = API_URL + '?action=getContacts';
+      if (grup) {
+        url += '&group=' + encodeURIComponent(grup);
+      }
+
+      kontakData = await getJSON(url);
+      kontakTerfilter = [...kontakData]; // Salin data ke kontakTerfilter untuk pencarian
+      
+      renderContacts();
+      document.getElementById('pilihSemua').checked = false;
+      updateJumlah();
+    }
+
+    // Merender baris kontak ke UI
+    function renderContacts() {
+      const div = document.getElementById('kontakList');
+      div.innerHTML = '';
+
+      if (kontakTerfilter.length === 0) {
+        div.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+            <i data-lucide="users" class="w-8 h-8 mb-2 stroke-1"></i>
+            <p class="text-xs">Tidak ada kontak ditemukan</p>
+          </div>
+        `;
+        initIcons();
+        return;
+      }
+
+      kontakTerfilter.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = "flex items-center justify-between p-2.5 rounded-lg hover:bg-white hover:shadow-sm transition-all duration-150 border border-transparent hover:border-gray-100 group";
+        
+        itemDiv.innerHTML = `
+          <label class="flex items-center gap-3 flex-1 cursor-pointer select-none">
+            <input type="checkbox" class="kontak rounded border-gray-300 text-whatsapp-600 focus:ring-whatsapp-500 h-4.5 w-4.5 cursor-pointer" value="${item.id}">
+            <div class="flex flex-col">
+              <span class="text-sm font-semibold text-gray-800">${item.nama}</span>
+              <span class="text-xs text-gray-500 font-mono flex items-center gap-1">
+                <i data-lucide="phone" class="w-3 h-3 text-gray-400"></i>
+                ${item.nomor}
+              </span>
+            </div>
+          </label>
+        `;
+        div.appendChild(itemDiv);
+      });
+
+      bindCheckbox();
+      initIcons();
+    }
+
+    // Logika Pencarian Kontak Secara Real-Time
+    function filterKontakAktif() {
+      const kataKunci = document.getElementById('cariKontak').value.toLowerCase().trim();
+      if (kataKunci === "") {
+        kontakTerfilter = [...kontakData];
+      } else {
+        kontakTerfilter = kontakData.filter(item => 
+          item.nama.toLowerCase().includes(kataKunci) || 
+          item.nomor.includes(kataKunci)
+        );
+      }
+      renderContacts();
+      
+      // Sinkronkan status Pilih Semua jika diubah saat pencarian
+      const totalCheckbox = document.querySelectorAll('.kontak').length;
+      const checkedCheckbox = document.querySelectorAll('.kontak:checked').length;
+      document.getElementById('pilihSemua').checked = totalCheckbox > 0 && totalCheckbox === checkedCheckbox;
+    }
+
+    // Menghubungkan fungsi listener perubahan ke checkbox kontak
+    function bindCheckbox() {
+      document.querySelectorAll('.kontak').forEach(cb => {
+        cb.addEventListener('change', () => {
+          updateJumlah();
+          
+          // Sinkronisasi status "Pilih Semua"
+          const totalCheckbox = document.querySelectorAll('.kontak').length;
+          const checkedCheckbox = document.querySelectorAll('.kontak:checked').length;
+          document.getElementById('pilihSemua').checked = totalCheckbox === checkedCheckbox;
+        });
+      });
+    }
+
+    // Memperbarui badge total terpilih
+    function updateJumlah() {
+      const total = document.querySelectorAll('.kontak:checked').length;
+      document.getElementById('jumlah').innerText = total;
+    }
+
+    // Toggle Pilih Semua Kontak
+    document.getElementById('pilihSemua').addEventListener('change', function() {
+      document.querySelectorAll('.kontak').forEach(cb => {
+        cb.checked = this.checked;
+      });
+      updateJumlah();
     });
 
-}
+    // Memuat daftar template dari spreadsheet
+    async function loadTemplates() {
+      templateData = await getJSON(API_URL + '?action=getTemplates');
+      const select = document.getElementById('template');
+      
+      // Reset & simpan opsi default
+      select.innerHTML = '<option value="">-- Pilih Template --</option>';
 
-function updateJumlah(){
+      if (templateData && templateData.length > 0) {
+        templateData.forEach(t => {
+          select.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+        });
+      }
+    }
 
-  const total =
-    document
-      .querySelectorAll(
-        '.kontak:checked'
-      )
-      .length;
+    // Deteksi pergantian template
+    document.getElementById('template').addEventListener('change', function() {
+      const data = templateData.find(x => String(x.id) === this.value);
+      if (data) {
+        document.getElementById('pesan').value = data.isi;
+      } else {
+        document.getElementById('pesan').value = "";
+      }
+    });
 
-  document
-    .getElementById(
-      'jumlah'
-    )
-    .innerText = total;
+    // --- SISTEM MODAL CUSTOM (Pengganti alert) ---
+    function bukaModal(opsi) {
+      const modal = document.getElementById('modalKonfirmasi');
+      const box = document.getElementById('modalBox');
+      const iconContainer = document.getElementById('modalIconContainer');
+      const icon = document.getElementById('modalIcon');
+      const title = document.getElementById('modalTitle');
+      const subtitle = document.getElementById('modalSubtitle');
+      const body = document.getElementById('modalBody');
+      const footer = document.getElementById('modalFooter');
 
-}
+      // Bersihkan kelas warna sebelumnya
+      iconContainer.className = "p-2 rounded-xl ";
+      
+      // Set Tema Modal (konfirmasi, loading, atau hasil)
+      if (opsi.type === 'confirm') {
+        iconContainer.classList.add("bg-amber-50", "text-amber-600");
+        icon.setAttribute('data-lucide', 'alert-triangle');
+        title.innerText = opsi.title || "Konfirmasi";
+        subtitle.innerText = opsi.subtitle || "Aksi diperlukan";
+        footer.style.display = "flex";
+      } else if (opsi.type === 'loading') {
+        iconContainer.classList.add("bg-whatsapp-50", "text-whatsapp-600");
+        icon.setAttribute('data-lucide', 'loader-2');
+        icon.classList.add('animate-spin');
+        title.innerText = opsi.title || "Mohon Tunggu";
+        subtitle.innerText = opsi.subtitle || "Sedang berkomunikasi dengan server";
+        footer.style.display = "none";
+      } else if (opsi.type === 'success') {
+        iconContainer.classList.add("bg-emerald-50", "text-emerald-600");
+        icon.setAttribute('data-lucide', 'check-circle');
+        title.innerText = opsi.title || "Selesai";
+        subtitle.innerText = opsi.subtitle || "Proses berhasil diselesaikan";
+        footer.style.display = "flex";
+      }
 
-document
-  .getElementById(
-    'pilihSemua'
-  )
-  .addEventListener(
-    'change',
-    function(){
+      body.innerHTML = opsi.content || "";
+      
+      // Munculkan dengan animasi transisi halus
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+      }, 50);
 
-      document
-        .querySelectorAll(
-          '.kontak'
-        )
-        .forEach(cb=>{
+      initIcons();
+    }
 
-          cb.checked =
-            this.checked;
+    function tutupModal() {
+      const modal = document.getElementById('modalKonfirmasi');
+      const box = document.getElementById('modalBox');
+      const icon = document.getElementById('modalIcon');
+      
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+      
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        icon.classList.remove('animate-spin');
+      }, 300);
+    }
 
+    // Membuka modal konfirmasi sebelum mengirimkan broadcast
+    function bukaKonfirmasi() {
+      const pengirim = document.getElementById('pengirim').value.trim();
+      const pesan = document.getElementById('pesan').value.trim();
+      
+      const ids = Array.from(document.querySelectorAll('.kontak:checked')).map(cb => cb.value);
+      const terpilihCount = ids.length;
+
+      if (!pengirim) {
+        showToast('Tolong masukkan Nama Pengirim dahulu!', 'warning');
+        return;
+      }
+
+      if (terpilihCount === 0) {
+        showToast('Silakan pilih minimal satu penerima!', 'warning');
+        return;
+      }
+
+      if (!pesan) {
+        showToast('Tulis isi pesan yang ingin disebarkan!', 'warning');
+        return;
+      }
+
+      // Generate rincian preview pesan kustom
+      bukaModal({
+        type: 'confirm',
+        title: 'Kirim Broadcast',
+        subtitle: 'Siap menyebarkan pesan massal',
+        content: `
+          <div class="space-y-2">
+            <div class="flex justify-between py-1 border-b border-gray-100">
+              <span class="text-gray-400">Pengirim:</span>
+              <span class="font-bold text-gray-800">${pengirim}</span>
+            </div>
+            <div class="flex justify-between py-1 border-b border-gray-100">
+              <span class="text-gray-400">Total Target:</span>
+              <span class="font-bold text-whatsapp-600">${terpilihCount} Kontak</span>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs">
+              <span class="block text-gray-400 font-bold mb-1 uppercase tracking-wider">Isi Draft Pesan:</span>
+              <p class="font-sans whitespace-pre-line text-gray-700">${pesan}</p>
+            </div>
+          </div>
+        `
+      });
+    }
+
+    // Mengeksekusi pengiriman pesan broadcast sesungguhnya ke server API Google Sheets
+    async function prosesKirimPesan() {
+      const pengirim = document.getElementById('pengirim').value.trim();
+      const pesan = document.getElementById('pesan').value.trim();
+
+      const ids = Array.from(document.querySelectorAll('.kontak:checked')).map(cb => cb.value);
+      const kontak = kontakData.filter(x => ids.includes(String(x.id)));
+
+      // Ubah visual modal ke status loading
+      bukaModal({
+        type: 'loading',
+        title: 'Mengirim Pesan...',
+        subtitle: 'Jangan tutup browser Anda',
+        content: `
+          <div class="flex flex-col items-center py-4">
+            <p class="text-xs text-gray-400">Sedang mengirimkan broadcast ke <strong class="text-whatsapp-600">${kontak.length}</strong> nomor.</p>
+          </div>
+        `
+      });
+
+      const body = {
+        action: 'sendMessage',
+        pengirim: pengirim,
+        pesan: pesan,
+        kontak: kontak
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8' // Menghindari CORS pre-flight yang kompleks
+          },
+          body: JSON.stringify(body)
         });
 
-      updateJumlah();
+        const result = await res.json();
+        
+        // Render Hasil Sukses ke Modal
+        bukaModal({
+          type: 'success',
+          title: 'Broadcast Selesai',
+          subtitle: 'Laporan pengiriman terbaru',
+          content: `
+            <div class="space-y-3">
+              <p class="text-xs text-gray-500">Pesan broadcast telah didistribusikan dengan detail log berikut:</p>
+              <div class="grid grid-cols-2 gap-3 text-center">
+                <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-xl">
+                  <span class="block text-xs text-emerald-600 font-bold uppercase">Berhasil</span>
+                  <span class="text-2xl font-black text-emerald-700">${result.berhasil}</span>
+                </div>
+                <div class="bg-rose-50 border border-rose-100 p-3 rounded-xl">
+                  <span class="block text-xs text-rose-500 font-bold uppercase">Gagal</span>
+                  <span class="text-2xl font-black text-rose-700">${result.gagal}</span>
+                </div>
+              </div>
+            </div>
+          `
+        });
 
+        // Set ulang footer tombol modal untuk kembali normal
+        const footer = document.getElementById('modalFooter');
+        footer.innerHTML = `
+          <button onclick="tutupModal();" class="px-5 py-2 text-sm font-semibold text-white bg-whatsapp-600 hover:bg-whatsapp-700 rounded-xl transition-all shadow-md">
+            Selesai & Tutup
+          </button>
+        `;
+        
+        // Hapus tanda checklist dan perbarui UI setelah sukses
+        document.querySelectorAll('.kontak:checked').forEach(cb => cb.checked = false);
+        document.getElementById('pilihSemua').checked = false;
+        updateJumlah();
+
+      } catch (error) {
+        console.error(error);
+        bukaModal({
+          type: 'confirm',
+          title: 'Gagal Mengirim',
+          subtitle: 'Terjadi kegagalan komunikasi',
+          content: `<p class="text-xs text-rose-500 font-medium">Koneksi dibatalkan atau server lambat memberi respon. Coba ulangi kembali atau hubungi penyedia API.</p>`
+        });
+        
+        const footer = document.getElementById('modalFooter');
+        footer.innerHTML = `
+          <button onclick="tutupModal()" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 rounded-xl">Tutup</button>
+          <button onclick="prosesKirimPesan()" class="px-5 py-2 text-sm font-medium text-white bg-whatsapp-500 hover:bg-whatsapp-600 rounded-xl transition-colors">
+            Coba Lagi
+          </button>
+        `;
+      }
     }
-  );
 
-async function loadTemplates(){
+    // --- TOAST NOTIFICATION (Pesan mengambang) ---
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastText');
 
-  templateData =
-    await getJSON(
-      API_URL +
-      '?action=getTemplates'
-    );
+      text.innerText = message;
+      icon.innerHTML = "";
 
-  const select =
-    document.getElementById(
-      'template'
-    );
-
-  templateData.forEach(t=>{
-
-    select.innerHTML += `
-      <option value="${t.id}">
-      ${t.nama}
-      </option>
-    `;
-
-  });
-
-}
-
-document
-  .getElementById(
-    'template'
-  )
-  .addEventListener(
-    'change',
-    function(){
-
-      const data =
-        templateData.find(
-          x =>
-          String(x.id) ===
-          this.value
-        );
-
-      if(data){
-
-        document
-          .getElementById(
-            'pesan'
-          )
-          .value =
-          data.isi;
-
+      // Setup warna dan icon toast
+      if (type === 'error') {
+        icon.className = "p-1.5 rounded-lg text-rose-600 bg-rose-50";
+        icon.innerHTML = `<i data-lucide="x-circle" class="w-4 h-4"></i>`;
+      } else if (type === 'warning') {
+        icon.className = "p-1.5 rounded-lg text-amber-600 bg-amber-50";
+        icon.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4"></i>`;
+      } else {
+        icon.className = "p-1.5 rounded-lg text-emerald-600 bg-emerald-50";
+        icon.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
       }
 
+      initIcons();
+
+      // Show toast
+      toast.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+      
+      // Hide setelah 3 detik
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    // Inisialisasi awal aplikasi saat dimuat
+    window.addEventListener('DOMContentLoaded', async () => {
+      initIcons();
+      await loadGroups();
+      await loadContacts();
+      await loadTemplates();
     });
-
-document
-  .getElementById(
-    'grup'
-  )
-  .addEventListener(
-    'change',
-    loadContacts
-  );
-
-async function kirimPesan(){
-
-  const pengirim =
-    document
-      .getElementById(
-        'pengirim'
-      )
-      .value;
-
-  const pesan =
-    document
-      .getElementById(
-        'pesan'
-      )
-      .value;
-
-  const ids =
-    Array.from(
-      document
-        .querySelectorAll(
-          '.kontak:checked'
-        )
-    ).map(
-      cb => Number(cb.value)
-    );
-
-  const kontak =
-    kontakData.filter(
-      x =>
-      ids.includes(x.id)
-    );
-
-  if(kontak.length === 0){
-
-    alert(
-      'Pilih penerima'
-    );
-
-    return;
-
-  }
-
-  const body = {
-
-    action:
-      'sendMessage',
-
-    pengirim:
-      pengirim,
-
-    pesan:
-      pesan,
-
-    kontak:
-      kontak
-
-  };
-
-  const res =
-    await fetch(
-      API_URL,
-      {
-
-        method:'POST',
-
-        headers:{
-          'Content-Type':
-          'application/json'
-        },
-
-        body:
-          JSON.stringify(
-            body
-          )
-
-      }
-    );
-
-  const result =
-    await res.json();
-
-  alert(
-    'Berhasil : ' +
-    result.berhasil +
-    '\nGagal : ' +
-    result.gagal
-  );
-
-}
-
-loadGroups();
-loadContacts();
-loadTemplates();
-
-</script>
-
+  </script>
 </body>
 </html>
